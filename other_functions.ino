@@ -105,7 +105,11 @@ void tagCode() { // Works out what the players tagger code (the code that is tra
 
 void hit() { // Make some noise and flash some lights when you get shot
   digitalWrite(hitPin,HIGH);
-  health = health - hp[hitNo];
+  health = health - hp[hitNo];    //??
+  Serial.print("hp hitNR: ");    //debunging
+  Serial.println(hp[hitNo]);      // debungging
+    Serial.println(hp[hitNo-1]);      // debungging
+      Serial.println(hp[hitNo+1]);      // debungging
   Serial.print("health: ");
   Serial.println(health);
   if(health <= 0){dead();}
@@ -160,5 +164,5 @@ void LEDHit() {
   digitalWrite(StatPin3,LOW);
   
 }
-  
+
 

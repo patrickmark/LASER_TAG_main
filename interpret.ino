@@ -50,7 +50,7 @@ void interpritReceived(){  // After a message has been received by the ReceiveIR
    
   parity[hitNo] = received[17];
 
-  HitsPlayer[player[hitNo]] =  HitsPlayer[player[hitNo]] + hp[hitNo]; // Addiert den Schaden der von jedem Spieler erliden wurde zusammen
+  HitsPlayer[player[hitNo]] =  HitsPlayer[player[hitNo]] + hp[hitNo]; // Addiert den Schaden der von jedem Spieler erlitten wurde zusammen
 
     for(int i = 0; i < 8; i++) { // gibt erlitenen Schaden pro Spieler aus
          Serial.print(i);
@@ -71,10 +71,10 @@ void interpritReceived(){  // After a message has been received by the ReceiveIR
   Serial.print(hp[hitNo]);
   Serial.print("  Parity: ");
   Serial.println(parity[hitNo]);
- 
-  transmitt();
+  
   //This is probably where more code should be added to expand the game capabilities at the moment the code just checks that the received data was not a system message and deducts a life if it wasn't.
   if (player[hitNo] != 0){hit();}
+  transmitt();  //tell the shooting player you got hit - defined in "shoot"
   hitNo++ ;
 }
 

@@ -22,13 +22,13 @@ void receiveIR() { // Void checks for an incoming signal and decodes it if it se
     
     for(int i = 1; i <= 17; i++) {                        // Repeats several times to make sure the whole signal has been received
       received[i] = pulseIn(IRreceivePin, LOW, timeOut);  // pulseIn command waits for a pulse and then records its duration in microseconds.
-      Serial.print("t= ");Serial.print(received[i]);  
+      //Serial.print("t= ");Serial.print(received[i]);  
     }
     
-   Serial.println("");
+   //Serial.println("");
    
-    Serial.print(received[0]); 
-    Serial.print("...");
+   // Serial.print(received[0]); 
+   // Serial.print("...");
    int receivedTemp[18];
     for(int i = 1; i <= 17; i++) {  // Looks at each one of the received pulses
       
@@ -38,10 +38,10 @@ void receiveIR() { // Void checks for an incoming signal and decodes it if it se
       received[i] = 3;                   // Wipes raw received data
       received[i] = receivedTemp[i];     // Inputs interpreted data
      
-      Serial.print(" ");
-      Serial.print(received[i]);         // Print interpreted data results
+     // Serial.print(" ");
+     // Serial.print(received[i]);         // Print interpreted data results
     }
-    Serial.println("");                  // New line to tidy up printed results
+    //Serial.println("");                  // New line to tidy up printed results
    
     // Parity Check. Was the data received a valid signal?
     check = 0;
@@ -53,7 +53,7 @@ void receiveIR() { // Void checks for an incoming signal and decodes it if it se
     check = check >> 0 & B1;
     // Serial.println(check);
     if(check != received[17]){error = 1;}
-    if(error == 0){Serial.println("Valid Signal"); health--;}
+    if(error == 0){Serial.println("Valid Signal");}
     else{Serial.println("ERROR");}
     if(error == 0){interpritReceived();}//interpret code and send a signal to the shooting person to signalise you got shot
     digitalWrite(hitPin,LOW);

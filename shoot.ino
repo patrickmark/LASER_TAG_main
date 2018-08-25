@@ -10,7 +10,7 @@ void transmitt() {        //If you get hit send a signal to the shooting person
     PlayerHitMsg[2]=(myTeamID);         //your team id
     driver.send((uint8_t *)PlayerHitMsg, 3);
     driver.waitPacketSent();
-    Serial.println("Player MSG sent");
+    //Serial.println("Player MSG sent");
 }
 
 void shoot() {

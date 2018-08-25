@@ -10,13 +10,15 @@ Notes:
 
 Debug mode: 1 ... aktiv ... in der Konsole kann mittels eingagbe (in funktion definiert) befehle ausgeführt werden
 
-TODO   prototyp bauen 
-       reichweite mit neuer linses -> testen
-       reichweite mit RF (momentan nur ein paar meter!)
-       Serielle Ausgabe verbessern
-       health fehler beheben
-       master pogramm zur einrichung des spiels -- ?
-       weitere kommentare
+TODO   * prototyp bauen 
+       * reichweite mit neuer linses -> testen
+       * reichweite mit RF (momentan nur ein paar meter!)
+       * Serielle Ausgabe verbessern
+       * health fehler beheben
+       * master pogramm zur einrichung des spiels -- ?
+       * weitere kommentare
+       * Akkuüberwachung und abschaltung (angefangen)
+       * #defines einführen und evtl auslagern in defines.h
 
        !!  my trigger funktion momentan in verwendung !!
 */
@@ -50,8 +52,8 @@ int StatPin3               = 8;      // Status Leds for indicating HP,Ammo,Weapo
 
 
 // Player and Game details
-int myTeamID               = 2;      // 1-7 (0 = system message)
-int myPlayerID             = 2;      // Player ID (0-31)
+int myTeamID               = 3;      // 1-7 (0 = system message)
+int myPlayerID             = 5;      // Player ID (0-31)
 int myGameID               = 1;      // Interprited by configureGane subroutine; allows for quick change of game types.
 int myWeaponID             = 1;      // Deffined by gameType and configureGame subroutine.
 int myWeaponHP             = 0;      // Deffined by gameType and configureGame subroutine.
@@ -118,10 +120,15 @@ unsigned long interrupt_time = 0;
 uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
 uint8_t buflen = sizeof(buf);
 
+long Vcc=0;
+
 void setup() {
   // Serial coms set up to help with debugging.
   Serial.begin(9600);
   Serial.println("Startup...");
+  Serial.print("Reading Startup VCC...");
+  Vcc = readVcc() / 1000.0;
+  Serial.println(Vcc);
   
   if (!driver.init())
   Serial.println("init failed");
@@ -152,15 +159,17 @@ void setup() {
   maxAmmo = MaxAmmo[myWeaponID-1];
   Ammo = ammo[myWeaponID-1];
 
-  Serial.print("Player ID ");  Serial.println(MyPlayerID);
-  Serial.print("Team ID ");  Serial.println(MyTeamID);
-  Serial.print("Game Mode ");  Serial.println(MyGameID);
+  Serial.print("Player ID ");  Serial.println(myPlayerID);
+  Serial.print("Team ID ");  Serial.println(myTeamID);
+  Serial.print("Game Mode ");  Serial.println(myGameID);
   Serial.println("Ready....");
 }
 
 
 void loop() {
-  receiveIR();
+  
+  Vcc = readVcc() / 1000.0;
+  receiveIR(); //receive IR data (in this funktion also "interpritReceived" is called)
   receiveRF();
   if (FIRE != 0) {
     shoot();
