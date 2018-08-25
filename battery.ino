@@ -24,3 +24,29 @@ long readVcc() {
   return result;
 } 
 
+float readVbat(){
+  float result=0;
+  long temp=0;
+  for(int i = 0; i<8;i++){
+    temp += analogRead(VbatPin);  
+  }
+  result = ((temp/8)*2.0*Vcc)/1024.0 ;  //spannungsteiler 2
+  return result;
+}
+
+void checkBat(){
+  
+  counter1=0;                                //set back counter
+  Vcc=readVcc()/1000.0;                      // readVcc returns in mV
+  Vbat=readVbat();
+  
+  if ( Vbat < 6.6 ){
+ 
+    set_sleep_mode(SLEEP_MODE_PWR_DOWN);    // sleep mode is set here
+    sleep_enable();   
+    //PORTD |= (1<<PORTD5);                 //not workung
+    //PORTB |= (1<<PORTB0);  
+    sleep_mode();                           // System sleeps here  
+    }
+  
+  }

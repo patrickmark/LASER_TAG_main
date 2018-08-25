@@ -22,11 +22,19 @@ TODO   * prototyp bauen
 
        !!  my trigger funktion momentan in verwendung !!
 */
+/*
+#define TX_RX_LED_INIT  DDRD |= (1<<5), DDRB |= (1<<0)
+#define TXLED1          PORTD |= (1<<5)
+#define TXLED0          PORTD &= ~(1<<5)
+#define RXLED1          PORTB |= (1<<0)
+#define RXLED0          PORTB &= ~(1<<0)
+*/
 
 
 
 #include<EEPROM.h>
 //#include <VirtualWire.h>
+#include <avr/sleep.h>
 
 #include <RH_ASK.h>
 #include <SPI.h> // Not actualy used but needed to compile
@@ -43,12 +51,13 @@ int debugmsg               = 0;
 int FirePin                = 3;      // Schiessen. Low = pressed
 int WeaponChangePin        = 12;     // Waffenwechsel. Low = pressed
 int ReloadPin              = 10;     // Nachladen
-int hitPin                 = 13;     // Zeigt treffer an
+int hitPin                 = 13;     // Zeigt treffer an   
 int IRtransmitPin          = 2;      // Primary fire mode IR transmitter pin: Use pins 2,4,7,8,12 or 13. DO NOT USE PWM pins!! More info: http://j44industries.blogspot.com/2009/09/arduino-frequency-generation.html#more
 int IRreceivePin           = 11;     // The pin that incoming IR signals are read from
 int StatPin1               = 6;      // Status Leds for indicating HP,Ammo,Weapon
 int StatPin2               = 7;      // Status Leds for indicating HP,Ammo,Weapon
 int StatPin3               = 8;      // Status Leds for indicating HP,Ammo,Weapon
+int VbatPin                = A0;     // Battery Voltage Pin
 
 
 // Player and Game details
@@ -120,15 +129,21 @@ unsigned long interrupt_time = 0;
 uint8_t buf[RH_ASK_MAX_MESSAGE_LEN];
 uint8_t buflen = sizeof(buf);
 
-long Vcc=0;
+float Vcc=0;
+float Vbat=0;
+int counter1 = 0;
 
 void setup() {
   // Serial coms set up to help with debugging.
   Serial.begin(9600);
   Serial.println("Startup...");
-  Serial.print("Reading Startup VCC...");
-  Vcc = readVcc() / 1000.0;
+  Serial.print("Reading Startup VCC... "); 
+  Vcc = readVcc() / 1000.0;  
   Serial.println(Vcc);
+  
+  Serial.print("Reading Startup Vbat... ");
+  Vbat = readVbat();  
+  Serial.println(Vbat);
   
   if (!driver.init())
   Serial.println("init failed");
@@ -167,8 +182,14 @@ void setup() {
 
 
 void loop() {
+ 
+////////////////////// COUNTER SECTION //////////////////// 
+
+  counter1++;
+  if (counter1==100) checkBat();      //if counter1 = 100 check Battery (counter var is set to 0 in checkBat()
   
-  Vcc = readVcc() / 1000.0;
+///////////////////////CODE SECTION ////////////////////
+
   receiveIR(); //receive IR data (in this funktion also "interpritReceived" is called)
   receiveRF();
   if (FIRE != 0) {
@@ -179,7 +200,7 @@ void loop() {
   //Serial.println("rec"); 
   //Serial.print("Team: "); Serial.println(myTeamID);
   
-////////////////////DEBUGGING MODE//////////////////
+////////////////////DEBUGGING SECITION /////////////////
 
 if (debug==1){
  debugmsg = 0;
@@ -193,6 +214,15 @@ if (debug==1){
    if( debugmsg==114){ reloadflag=1; Ammo = maxAmmo; }      //r
    if( debugmsg==119){ wpchangeflag=1;}                     //w
    if( debugmsg==104){ health--; Serial.print(health);}     //h
+   if( debugmsg=='a'){  
+     Serial.print("Reading VCC... "); 
+     Vcc = readVcc() / 1000.0;  
+     Serial.println(Vcc);
+     Serial.print("Reading Vbat... ");
+     Vbat = readVbat();  
+     Serial.println(Vbat);
+     checkBat();
+                     }
    //Serial.println(debugmsg); 
    }
   
