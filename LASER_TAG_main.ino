@@ -13,14 +13,12 @@ Debug mode: 1 ... aktiv ... in der Konsole kann mittels eingagbe (in funktion de
 TODO   * prototyp bauen 
        * reichweite mit neuer linses -> testen
        * reichweite mit RF (momentan nur ein paar meter!)
-       * Serielle Ausgabe verbessern
-       * health fehler beheben
        * master pogramm zur einrichung des spiels -- ?
        * weitere kommentare
        * Akkuüberwachung und abschaltung (angefangen)
        * #defines einführen und evtl auslagern in defines.h
-       * RF Antenne exakt 17cm länge!!
-       * Serialcom to 115200
+       * visuelle Ausagebe (health, shot, hit...)
+       * audio 
 
        !!  my trigger funktion momentan in verwendung !!
 */
