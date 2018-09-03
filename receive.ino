@@ -14,8 +14,9 @@ void receiveRF()
 void receiveIR() { // Void checks for an incoming signal and decodes it if it sees one.
   int error = 0;
   
+  
   if(digitalRead(IRreceivePin) == LOW){    // If the receive pin is low a signal is being received.
-    digitalWrite(hitPin,HIGH);  
+  //  digitalWrite(hitPin,HIGH);  //??
  
     while(digitalRead(IRreceivePin) == LOW){}
     
@@ -52,11 +53,14 @@ void receiveIR() { // Void checks for an incoming signal and decodes it if it se
     // Serial.println(check);
     check = check >> 0 & B1;
     // Serial.println(check);
-    if(check != received[17]){error = 1;}
-    if(error == 0){Serial.println("Valid Signal");}
-    else{Serial.println("ERROR");}
-    if(error == 0){interpritReceived();}//interpret code and send a signal to the shooting person to signalise you got shot
-    digitalWrite(hitPin,LOW);
+    if(check != received[17])  error = 1;
+    if(error == 0){
+      Serial.println("Valid Signal");
+      interpritReceived();
+      //digitalWrite(hitPin,HIGH);  //indicate you got hit ... is set to low in interpret
+                  }
+                  
+    else  Serial.println("ERROR");
   }
 }
 

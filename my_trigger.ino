@@ -59,7 +59,7 @@ void my_trigger() { // Checks to see if the trigger, weaponchange or reload have
   
   if(FIRE == 1){
     interrupt_time=millis();
-    if (Ammo<=0){ Serial.println("no Ammo!"); LEDReload();}
+    if (Ammo<=0){ Serial.println("no Ammo!"); reloadflag=1;}
       else{
         ammo[myWeaponID-1]--;       
         Ammo--;

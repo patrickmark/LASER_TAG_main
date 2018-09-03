@@ -1,3 +1,5 @@
+
+
 void sendPulse(int pin, int length){ // importing variables like this allows for secondary fire modes etc.
 // This void genertates the carrier frequency for the information to be transmitted
   int i = 0;
@@ -76,6 +78,7 @@ void tagCode() { // Works out what the players tagger code (the code that is tra
   }
 
   // Next few lines print the full tagger code.
+ /*
   Serial.print("Byte1: ");
   Serial.print(byte1[0]);
   Serial.print(byte1[1]);
@@ -101,19 +104,17 @@ void tagCode() { // Works out what the players tagger code (the code that is tra
   Serial.print("Parity: ");
   Serial.print(myParity);
   Serial.println();
+  */
 }
 
 void hit() { // Make some noise and flash some lights when you get shot
-  digitalWrite(hitPin,HIGH);
-  health = health - hp[hitNo];    //??
-  Serial.print("hp hitNR: ");    //debunging
-  Serial.println(hp[hitNo]);      // debungging
-    Serial.println(hp[hitNo-1]);      // debungging
-      Serial.println(hp[hitNo+1]);      // debungging
+  //digitalWrite(hitPin,HIGH);
+  gothitflag=1;
+  health = health - hp[hitNo];
   Serial.print("health: ");
   Serial.println(health);
   if(health <= 0){dead();}
-  digitalWrite(hitPin,LOW);
+  //digitalWrite(hitPin,LOW);
  
 }
 
@@ -129,11 +130,9 @@ void dead() { // void determines what the tagger does when it is out of lives
   }
 }
 
-void LEDReload() {
+void LEDReload(bool state) {
   
-  digitalWrite(StatPin1,HIGH);
-  digitalWrite(StatPin2,HIGH);
-  digitalWrite(StatPin3,HIGH);
+  digitalWrite(StatPin2,state);
   delay(200);
   
   digitalWrite(StatPin1,LOW);
@@ -152,16 +151,19 @@ void LEDReload() {
   
 }
 
-void LEDHit() {
+void LEDHit(bool state) {  // hit leds mit millis aktivieren und später wieder deaktivieren
   
-  digitalWrite(StatPin1,HIGH);
-  digitalWrite(StatPin2,HIGH);
-  digitalWrite(StatPin3,HIGH);
-  delay(1000);
+  //digitalWrite(StatPin1,state);
+  //digitalWrite(StatPin2,state);
+  digitalWrite(StatPin3,state);
   
-  digitalWrite(StatPin1,LOW);
-  digitalWrite(StatPin2,LOW);
-  digitalWrite(StatPin3,LOW);
+}
+
+void LEDShot(bool state) {  // hit leds mit millis aktivieren und später wieder deaktivieren
+  
+  //digitalWrite(StatPin1,state);
+  digitalWrite(StatPin2,state);
+  //digitalWrite(StatPin3,state);
   
 }
 

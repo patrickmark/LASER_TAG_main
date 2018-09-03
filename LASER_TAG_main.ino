@@ -19,6 +19,8 @@ TODO   * prototyp bauen
        * weitere kommentare
        * Akkuüberwachung und abschaltung (angefangen)
        * #defines einführen und evtl auslagern in defines.h
+       * RF Antenne exakt 17cm länge!!
+       * Serialcom to 115200
 
        !!  my trigger funktion momentan in verwendung !!
 */
@@ -61,8 +63,8 @@ int VbatPin                = A0;     // Battery Voltage Pin
 
 
 // Player and Game details
-int myTeamID               = 3;      // 1-7 (0 = system message)
-int myPlayerID             = 5;      // Player ID (0-31)
+int myTeamID               = 2;      // 1-7 (0 = system message)
+int myPlayerID             = 4;      // Player ID (0-31)
 int myGameID               = 1;      // Interprited by configureGane subroutine; allows for quick change of game types.
 int myWeaponID             = 1;      // Deffined by gameType and configureGame subroutine.
 int myWeaponHP             = 0;      // Deffined by gameType and configureGame subroutine.
@@ -118,7 +120,7 @@ int player[10];                      // Array must be as large as memory
 int team[10];                        // Array must be as large as memory
 // Byte2
 int weapon[10];                      // Array must be as large as memory
-int hp[10];                          // Array must be as large as memory
+int hp[10];                          // Array must be as large as memory //stores the damage, the last hit makes 
 int parity[10];                      // Array must be as large as memory
 
 //for debouncing
@@ -132,10 +134,13 @@ uint8_t buflen = sizeof(buf);
 float Vcc=0;
 float Vbat=0;
 int counter1 = 0;
+int gothitflag=0;
+int youhitflag=0;
+int reloadflag=0;
 
 void setup() {
   // Serial coms set up to help with debugging.
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Startup...");
   Serial.print("Reading Startup VCC... "); 
   Vcc = readVcc() / 1000.0;  
@@ -162,7 +167,7 @@ void setup() {
 
   frequencyCalculations();        // Calculates pulse lengths etc for desired frequency
   configureGame();                // Look up and configure game details
-  tagCode();                      // Based on game details etc works out the data that will be transmitted when a shot is fired
+  //tagCode();                      // Based on game details etc works out the data that will be transmitted when a shot is fired
 
   digitalWrite(FirePin, HIGH);              // Not really needed if your circuit has the correct pull up resistors already but doesn't harm
   digitalWrite(WeaponChangePin, HIGH);      // Not really needed if your circuit has the correct pull up resistors already but doesn't harm
@@ -177,22 +182,56 @@ void setup() {
   Serial.print("Player ID ");  Serial.println(myPlayerID);
   Serial.print("Team ID ");  Serial.println(myTeamID);
   Serial.print("Game Mode ");  Serial.println(myGameID);
+  Serial.print("Weapon ID ");  Serial.println(myWeaponID);
+  Serial.print("Weapon HP ");  Serial.println(myWeaponHP);
   Serial.println("Ready....");
 }
-
+  unsigned long temptime1=0;
+  unsigned long temptime2=0;
+  unsigned long temptime3=0;
 
 void loop() {
  
-////////////////////// COUNTER SECTION //////////////////// 
+////////////////////// COUNTER AND TIMER SECTION //////////////////// 
 
   counter1++;
   if (counter1==100) checkBat();      //if counter1 = 100 check Battery (counter var is set to 0 in checkBat()
   
+//signalise you got hit      ///not working
+  if(gothitflag==1) {
+    temptime1=millis();
+    digitalWrite(StatPin3,HIGH);
+    gothitflag=0;
+    }
+   else if (millis()- temptime1 >1000) {digitalWrite(StatPin3,LOW); temptime1=0;}
+  
+//signalise you hit sb.
+  if(youhitflag==1) {
+    temptime2=millis();
+    digitalWrite(StatPin2,HIGH);
+    youhitflag=0;
+    }
+   else if (millis()- temptime2 >1000) {digitalWrite(StatPin2,LOW); temptime2=0;}
+ 
+ //signalise ran out of ammo      //not worjubg
+  if(reloadflag==1) {
+    temptime3=millis();
+    digitalWrite(StatPin3,HIGH);
+    reloadflag=0;
+    }
+   //else if (200 < millis()- temptime3 < 400) digitalWrite(StatPin3,LOW);
+   //else if (400 < millis()- temptime3 < 600) digitalWrite(StatPin3,HIGH);
+   //else if (600 < millis()- temptime3 < 800) digitalWrite(StatPin3,LOW);
+   //else if (800 < millis()- temptime3 < 1000) digitalWrite(StatPin3,HIGH);
+   else if (1000 < millis()- temptime3 ) {digitalWrite(StatPin3,LOW); temptime3=0;}   
+   
+ 
 ///////////////////////CODE SECTION ////////////////////
 
   receiveIR(); //receive IR data (in this funktion also "interpritReceived" is called)
   receiveRF();
   if (FIRE != 0) {
+    tagCode();              // works out which data will be transmitted when a shot is fired
     shoot();
   }
   my_trigger();
@@ -213,7 +252,7 @@ if (debug==1){
    if( debugmsg==115){ shootflag=1; FIRE =1;}               //s
    if( debugmsg==114){ reloadflag=1; Ammo = maxAmmo; }      //r
    if( debugmsg==119){ wpchangeflag=1;}                     //w
-   if( debugmsg==104){ health--; Serial.print(health);}     //h
+   if( debugmsg==104){ }     //h
    if( debugmsg=='a'){  
      Serial.print("Reading VCC... "); 
      Vcc = readVcc() / 1000.0;  

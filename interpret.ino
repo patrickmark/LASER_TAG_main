@@ -13,7 +13,7 @@ void interpritReceivedRF(){
   HitEnemy=0;
   if(buf[0]==2&&buf[1]==myPlayerID){ 
     buf[0]=0;   
-    if(buf[2]!=myTeamID)  {HitFriend=1; Serial.println("Target Hit");  LEDHit();}
+    if(buf[2]!=myTeamID)  {HitFriend=1; Serial.println("Target Hit"); youhitflag=1; }
     else {HitEnemy=1;Serial.println("FRIENDLY FIRE!!!");}
   }
   
@@ -49,15 +49,23 @@ void interpritReceived(){  // After a message has been received by the ReceiveIR
   if(received[16] == 1){hp[hitNo] = hp[hitNo] + 1;}
    
   parity[hitNo] = received[17];
+  
+  /* team[hitNo] ... team id vom player der dich getroffen hat
+     player[hitNo] ... player id ....
+     weapon[hitNo] ... weapon id ... 
+     hp[hitNo]    ... weapon hp ...
+  */
 
-  HitsPlayer[player[hitNo]] =  HitsPlayer[player[hitNo]] + hp[hitNo]; // Addiert den Schaden der von jedem Spieler erlitten wurde zusammen
 
-    for(int i = 0; i < 8; i++) { // gibt erlitenen Schaden pro Spieler aus
+  HitsPlayer[player[hitNo]] += hp[hitNo]; // Addiert den Schaden der von jedem Spieler erlitten wurde zusammen
+/*
+    for(int i = 1; i < 8; i++) { // gibt erlitenen Schaden pro Spieler aus
          Serial.print(i);
-         Serial.print("Player ");
-         Serial.print(HitsPlayer[i]);
-       
+         Serial.print(". Pl.: ");
+         Serial.print(HitsPlayer[i]);     
       }
+    Serial.println();
+*/
 
   Serial.print("Hit No: ");
   Serial.print(hitNo);
@@ -68,14 +76,15 @@ void interpritReceived(){  // After a message has been received by the ReceiveIR
   Serial.print("  Weapon: ");
   Serial.print(weapon[hitNo]);
   Serial.print("  HP: ");
-  Serial.print(hp[hitNo]);
-  Serial.print("  Parity: ");
-  Serial.println(parity[hitNo]);
+  Serial.println(hp[hitNo]);
+  //Serial.print("  Parity: ");
+  //Serial.println(parity[hitNo]);
   
   //This is probably where more code should be added to expand the game capabilities at the moment the code just checks that the received data was not a system message and deducts a life if it wasn't.
-  if (player[hitNo] != 0){hit();}
+  if (player[hitNo] != 0)  hit();     //player 0 wäre system massage 
   transmitt();  //tell the shooting player you got hit - defined in "shoot"
   hitNo++ ;
+  
 }
 
 
