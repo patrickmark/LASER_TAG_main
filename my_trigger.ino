@@ -44,17 +44,17 @@ void my_trigger() { // Checks to see if the trigger, weaponchange or reload have
   if(myWeaponID == 1 && TR == LOW && TR != LTR){ //Pistole einzelschuss
     //Serial.println("trigger");
     last_interrupt_time=millis();
-    if ((last_interrupt_time-interrupt_time)>WeaponFireRate[1])            FIRE = 1;
+    if ((last_interrupt_time-interrupt_time)>WeaponFireRate[0])            FIRE = 1;
 
   }
   if(myWeaponID == 2 && TR == LOW && TR != LTR){ // ScharfschÃ¼tze einzelschuss
      last_interrupt_time=millis();
-    if ((last_interrupt_time-interrupt_time)>WeaponFireRate[2])            FIRE = 1;
+    if ((last_interrupt_time-interrupt_time)>WeaponFireRate[1])            FIRE = 1;
 
   }
   if(myWeaponID == 3 && TR == LOW){              // MG dauerfeuer
      last_interrupt_time=millis();
-    if ((last_interrupt_time-interrupt_time)>WeaponFireRate[3])            FIRE = 1;
+    if ((last_interrupt_time-interrupt_time)>WeaponFireRate[2])            FIRE = 1;
   }
   
   if(FIRE == 1){

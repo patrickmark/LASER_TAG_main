@@ -60,7 +60,7 @@ void receiveIR() { // Void checks for an incoming signal and decodes it if it se
       //digitalWrite(hitPin,HIGH);  //indicate you got hit ... is set to low in interpret
                   }
                   
-    else  Serial.println("ERROR");
+    //else  Serial.println("ERROR");
   }
 }
 

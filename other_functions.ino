@@ -45,7 +45,7 @@ void frequencyCalculations() { // Works out all the timings needed to give the c
   Serial.println(IRt);
   Serial.print("Pulses: ");
   Serial.println(IRpulses);
-  timeOut = 2* IRpulse + 500; // Adding 100 to the expected pulse time gives a little margin for error on the pulse read time out value
+  timeOut = 2* IRpulse + 100; // 500 working //Adding 100 to the expected pulse time gives a little margin for error on the pulse read time out value
 }
 
 void tagCode() { // Works out what the players tagger code (the code that is transmitted when they shoot) is

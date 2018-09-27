@@ -17,8 +17,8 @@ TODO   * prototyp bauen
        * weitere kommentare
        * Akkuüberwachung und abschaltung (angefangen)
        * #defines einführen und evtl auslagern in defines.h
-       * visuelle Ausagebe (health, shot, hit...)
-       * audio 
+       * visuelle Ausagebe (health, shot, hit...) angefangen
+       * audio angefangen
 
        !!  my trigger funktion momentan in verwendung !!
 */
@@ -51,7 +51,8 @@ int debugmsg               = 0;
 int FirePin                = 3;      // Schiessen. Low = pressed
 int WeaponChangePin        = 12;     // Waffenwechsel. Low = pressed
 int ReloadPin              = 10;     // Nachladen
-int hitPin                 = 13;     // Zeigt treffer an   
+int hitPin                 = 13;     // Buzzer for tones
+int BuzzerPin              = 9;     // Buzzer for tones
 int IRtransmitPin          = 2;      // Primary fire mode IR transmitter pin: Use pins 2,4,7,8,12 or 13. DO NOT USE PWM pins!! More info: http://j44industries.blogspot.com/2009/09/arduino-frequency-generation.html#more
 int IRreceivePin           = 11;     // The pin that incoming IR signals are read from
 int StatPin1               = 6;      // Status Leds for indicating HP,Ammo,Weapon
@@ -82,8 +83,8 @@ int eepromUpdate           = 0;
 int MaxAmmo[3]={15,1,40};
 int WeaponHP[3]={3,10,1};
 int ammo[3]={MaxAmmo[0],MaxAmmo[1],MaxAmmo[2]};
-int WeaponFireRate[3]={400,1200,250};                               //waiting time in ms (250 maybe to low ->ERROR)
-int ChangeReload_Time[2]={3000,1500};                               //waiting time after Weaponchange and Reload in ms
+int WeaponFireRate[3]={250,1200,50};                               //waiting time in ms (250 maybe to low ->ERROR) (weapon1,weapon2, weapon3)
+int ChangeReload_Time[2]={3000,1500};                               //waiting time after Weaponchange and Reload in ms (change,reload)
 
 int Ammo                   = 0;      // Current ammunition
 int health                 = 30;      // Current health
@@ -135,6 +136,7 @@ int counter1 = 0;
 int gothitflag=0;
 int youhitflag=0;
 int reloadflag=0;
+int toneshootflag=0;
 
 void setup() {
   // Serial coms set up to help with debugging.
@@ -152,9 +154,9 @@ void setup() {
   Serial.println("init failed");
          
   // Pin declarations
-  pinMode(FirePin, INPUT);
-  pinMode(WeaponChangePin, INPUT);
-  pinMode(ReloadPin, INPUT);
+  pinMode(FirePin, INPUT_PULLUP);
+  pinMode(WeaponChangePin, INPUT_PULLUP);
+  pinMode(ReloadPin, INPUT_PULLUP);
   pinMode(hitPin, OUTPUT);
   pinMode(StatPin1, OUTPUT);
   pinMode(StatPin2, OUTPUT);
@@ -162,7 +164,7 @@ void setup() {
   pinMode(IRtransmitPin, OUTPUT);
   pinMode(IRreceivePin, INPUT);
   
-
+ 
   frequencyCalculations();        // Calculates pulse lengths etc for desired frequency
   configureGame();                // Look up and configure game details
   //tagCode();                      // Based on game details etc works out the data that will be transmitted when a shot is fired
@@ -184,9 +186,12 @@ void setup() {
   Serial.print("Weapon HP ");  Serial.println(myWeaponHP);
   Serial.println("Ready....");
 }
-  unsigned long temptime1=0;
+  unsigned long temptime1=0; //einen werrt zuweisen um beim ersten durchgang keine ungewolten dinge zu tun
   unsigned long temptime2=0;
   unsigned long temptime3=0;
+  unsigned long temptime4=0;
+  int note=3000;
+
 
 void loop() {
  
@@ -195,42 +200,45 @@ void loop() {
   counter1++;
   if (counter1==100) checkBat();      //if counter1 = 100 check Battery (counter var is set to 0 in checkBat()
   
-//signalise you got hit      ///not working
-  if(gothitflag==1) {
-    temptime1=millis();
-    digitalWrite(StatPin3,HIGH);
-    gothitflag=0;
-    }
-   else if (millis()- temptime1 >1000) {digitalWrite(StatPin3,LOW); temptime1=0;}
+//signalise you got hit 
+  if(gothitflag==1) {temptime1=millis();  digitalWrite(StatPin3,HIGH);  note=800;  gothitflag=2;
+  }
+   if ((millis()- temptime1) < 50 && gothitflag==2) {tone(BuzzerPin, note, 1); note -=10;}
+   if ((millis()- temptime1) >1000 && gothitflag==2) {digitalWrite(StatPin3,LOW); gothitflag=0;}
   
 //signalise you hit sb.
-  if(youhitflag==1) {
-    temptime2=millis();
-    digitalWrite(StatPin2,HIGH);
-    youhitflag=0;
+  if(youhitflag==1) {temptime2=millis(); digitalWrite(StatPin2,HIGH); youhitflag=2;
     }
-   else if (millis()- temptime2 >1000) {digitalWrite(StatPin2,LOW); temptime2=0;}
+  if ((millis()- temptime2) < 100  && youhitflag==2) {tone(BuzzerPin, note, 1); note -=5;}
+  if ((millis()- temptime2) > 1000 && youhitflag==2) {digitalWrite(StatPin2,LOW); youhitflag=0;}
  
- //signalise ran out of ammo      //not worjubg
-  if(reloadflag==1) {
-    temptime3=millis();
-    digitalWrite(StatPin3,HIGH);
-    reloadflag=0;
+ //signalise ran out of ammo  
+  if(reloadflag==1) {temptime3=millis();  digitalWrite(StatPin3,HIGH);  note=500;  reloadflag=2;
     }
-   //else if (200 < millis()- temptime3 < 400) digitalWrite(StatPin3,LOW);
-   //else if (400 < millis()- temptime3 < 600) digitalWrite(StatPin3,HIGH);
-   //else if (600 < millis()- temptime3 < 800) digitalWrite(StatPin3,LOW);
-   //else if (800 < millis()- temptime3 < 1000) digitalWrite(StatPin3,HIGH);
-   else if (1000 < millis()- temptime3 ) {digitalWrite(StatPin3,LOW); temptime3=0;}   
+   if ((millis()- temptime3) < 50  && reloadflag==2) {tone(BuzzerPin, note, 1);}
+   else if ((millis()- temptime3) < 150  && reloadflag==2) {}
+   else if ((millis()- temptime3) < 250  && reloadflag==2) {tone(BuzzerPin, note, 1);}
+   if (200 < millis()- temptime3 && reloadflag==2) {digitalWrite(StatPin3,LOW); reloadflag =3;}
+   if (400 < millis()- temptime3 && reloadflag==3) { digitalWrite(StatPin3,HIGH); reloadflag =4;}
+   if (600 < millis()- temptime3 && reloadflag==4) {digitalWrite(StatPin3,LOW); reloadflag =5;}
+   if (800 < millis()- temptime3 && reloadflag==5) {digitalWrite(StatPin3,HIGH); reloadflag =6;}
+   if (1000 < millis()- temptime3 && reloadflag==6) {digitalWrite(StatPin3,LOW); reloadflag =0;} 
    
- 
-///////////////////////CODE SECTION ////////////////////
+  ////////////buzzer////////////////
+  if(toneshootflag==1) {temptime4=millis(); note=1500;  toneshootflag=2;
+  } 
+    else if (millis()- temptime4 < 30 && toneshootflag==2) {tone(BuzzerPin, note, 1); note +=10;}
+    else if (millis()- temptime4 < 150 && toneshootflag==2) {tone(BuzzerPin, note, 1); note -=5;}
+  
 
+///////////////////////CODE SECTION ////////////////////
+  //Serial.println(millis());
   receiveIR(); //receive IR data (in this funktion also "interpritReceived" is called)
   receiveRF();
   if (FIRE != 0) {
     tagCode();              // works out which data will be transmitted when a shot is fired
     shoot();
+    toneshootflag=1;
   }
   my_trigger();
   interpritReceivedRF();
@@ -266,7 +274,6 @@ if (debug==1){
   }
   
 }
-
 
 //TeamID, GameID und PlayerID mÃ¼ssen hÃ¤ndisch oben definiert werden, spÃ¤ter Programm fÃ¼r zugriff von ausen
 //einbindung von Display und Lautsprecher fehlen
